@@ -155,8 +155,18 @@ public class Hero {
      * @return a HeroMemento snapshot, or null in the scaffold
      */
     public HeroMemento createMemento() {
-        // TODO: capture the full mutable state into a HeroMemento.
-        return null;
+        // Take a deep-ish snapshot of all mutable state. Inventory artifacts
+        // themselves are immutable data holders, so we copy the list only.
+        return new HeroMemento(
+                this.name,
+                this.hp,
+                this.mana,
+                this.gold,
+                this.maxHp,
+                this.attackPower,
+                this.defense,
+                this.inventory.getArtifacts()
+        );
     }
 
     /**
@@ -165,7 +175,18 @@ public class Hero {
      * @param memento the snapshot to restore from
      */
     public void restoreFromMemento(HeroMemento memento) {
-        // TODO: read the snapshot and restore the hero's mutable state.
+        if (memento == null) {
+            throw new IllegalArgumentException("Cannot restore from a null memento");
+        }
+        // Use the package-private getters — only Hero can read these because
+        // it lives in the same package as HeroMemento.
+        this.hp = memento.getHp();
+        this.mana = memento.getMana();
+        this.gold = memento.getGold();
+        // Note: name, maxHp, attackPower, defense are final / identity fields
+        // and the snapshot ones must match this hero. We still reset inventory
+        // because the memento captured it as part of mutable state.
+        this.inventory = new Inventory(memento.getInventorySnapshot());
     }
 
     @Override
